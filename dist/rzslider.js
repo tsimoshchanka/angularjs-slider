@@ -1,6 +1,6 @@
-/*! angularjs-slider - v7.0.0 - 
- (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervi.eu>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> - 
- https://github.com/angular-slider/angularjs-slider - 
+/*! angularjs-slider - v7.0.0 -
+ (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervi.eu>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> -
+ https://github.com/angular-slider/angularjs-slider -
  2019-03-06 */
 /*jslint unparam: true */
 /*global angular: false, console: false, define, module */
@@ -2019,11 +2019,12 @@
          * @returns {undefined}
          */
         onStart: function(pointer, ref, event) {
+          console.log('onStart');
           var ehMove,
             ehEnd,
             eventNames = this.getEventNames(event)
 
-          event.stopPropagation()
+          // event.stopPropagation()
           event.preventDefault()
 
           // We have to do this in case the HTML where the sliders are on
@@ -2037,7 +2038,7 @@
             this.tracking = pointer === this.minH ? 'lowValue' : 'highValue'
           }
 
-          pointer.addClass('rz-active')
+          pointer.addClass('rz-active123123123')
 
           if (this.options.keyboardSupport) this.focusElement(pointer)
 
@@ -2137,8 +2138,8 @@
           this.touchId = null
 
           if (!this.options.keyboardSupport) {
-            this.minH.removeClass('rz-active')
-            this.maxH.removeClass('rz-active')
+            this.minH.removeClass('rz-active123123123')
+            this.maxH.removeClass('rz-active123123123')
             this.tracking = ''
           }
           this.dragging.active = false
@@ -2160,7 +2161,7 @@
           pointer.on('keydown', angular.bind(this, this.onKeyboardEvent))
           pointer.on('keyup', angular.bind(this, this.onKeyUp))
           this.firstKeyDown = true
-          pointer.addClass('rz-active')
+          pointer.addClass('rz-active123123123')
 
           this.currentFocusElement = {
             pointer: pointer,
@@ -2176,7 +2177,7 @@
         onPointerBlur: function(pointer) {
           pointer.off('keydown')
           pointer.off('keyup')
-          pointer.removeClass('rz-active')
+          pointer.removeClass('rz-active123123123')
           if (!this.isDragging) {
             this.tracking = ''
             this.currentFocusElement = null
@@ -2483,8 +2484,8 @@
                 this.updateHandles(this.tracking, this.maxH.rzsp)
                 this.updateAriaAttributes()
                 this.tracking = 'highValue'
-                this.minH.removeClass('rz-active')
-                this.maxH.addClass('rz-active')
+                this.minH.removeClass('rz-active123123123')
+                this.maxH.addClass('rz-active123123123')
                 if (this.options.keyboardSupport) this.focusElement(this.maxH)
                 valueChanged = true
               } else if (
@@ -2497,8 +2498,8 @@
                 this.updateHandles(this.tracking, this.minH.rzsp)
                 this.updateAriaAttributes()
                 this.tracking = 'lowValue'
-                this.maxH.removeClass('rz-active')
-                this.minH.addClass('rz-active')
+                this.maxH.removeClass('rz-active123123123')
+                this.minH.addClass('rz-active123123123')
                 if (this.options.keyboardSupport) this.focusElement(this.minH)
                 valueChanged = true
               }
