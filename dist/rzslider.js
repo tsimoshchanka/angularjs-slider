@@ -1,7 +1,7 @@
-/*! angularjs-slider - v6.7.0 - 
- (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervi.eu>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> - 
- https://github.com/angular-slider/angularjs-slider - 
- 2019-02-23 */
+/*! angularjs-slider - v7.0.0 -
+ (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervi.eu>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> -
+ https://github.com/angular-slider/angularjs-slider -
+ 2019-03-06 */
 /*jslint unparam: true */
 /*global angular: false, console: false, define, module */
 ;(function(root, factory) {
@@ -27,7 +27,7 @@
 })(this, function(angular) {
   'use strict'
   var module = angular
-    .module('rzModule', [])
+    .module('rzSlider', [])
     .factory('RzSliderOptions', function() {
       var defaultOptions = {
         floor: 0,
@@ -72,6 +72,7 @@
         enforceRange: false,
         noSwitching: false,
         onlyBindHandles: false,
+        disableAnimation: false,
         onStart: null,
         onChange: null,
         onEnd: null,
@@ -97,7 +98,7 @@
        * `options({})` allows global configuration of all sliders in the
        * application.
        *
-       *   var app = angular.module( 'App', ['rzModule'], function( RzSliderOptions ) {
+       *   var app = angular.module( 'App', ['rzSlider'], function( RzSliderOptions ) {
        *     // show ticks for all sliders
        *     RzSliderOptions.options( { showTicks: true } );
        *   });
@@ -332,6 +333,11 @@
          */
         this.currentFocusElement = null
 
+        /**
+         * Internal variable to know if we are already moving
+         */
+        this.moving = false
+
         // Slider DOM elements wrapped in jqLite
         this.fullBar = null // The whole slider bar
         this.selBar = null // Highlight between two handles
@@ -386,6 +392,10 @@
           angular.element($window).on('resize', calcDimFn)
 
           this.initHasRun = true
+
+          if (this.options.disableAnimation) {
+            this.sliderElem.addClass('noanimate')
+          }
 
           // Watch for changes to the model
           thrLow = rzThrottle(function() {
@@ -594,6 +604,9 @@
           if (this.options.vertical) {
             this.positionProperty = 'bottom'
             this.dimensionProperty = 'height'
+          } else {
+            this.positionProperty = 'left'
+            this.dimensionProperty = 'width'
           }
 
           if (this.options.customTemplateScope)
@@ -628,6 +641,7 @@
          * @returns {undefined}
          */
         resetSlider: function() {
+          this.resetLabelsValue()
           this.manageElementsStyle()
           this.addAccessibility()
           this.setMinAndMax()
@@ -769,7 +783,11 @@
             this.fullBar.addClass('rz-transparent')
           }
 
-          if (this.options.vertical) this.sliderElem.addClass('rz-vertical')
+          if (this.options.vertical) {
+            this.sliderElem.addClass('rz-vertical')
+          } else {
+            this.sliderElem.removeClass('rz-vertical')
+          }
 
           if (this.options.draggableRange) this.selBar.addClass('rz-draggable')
           else this.selBar.removeClass('rz-draggable')
@@ -816,6 +834,14 @@
         resetLabelsValue: function() {
           this.minLab.rzsv = undefined
           this.maxLab.rzsv = undefined
+          this.flrLab.rzsv = undefined
+          this.ceilLab.rzsv = undefined
+          this.cmbLab.rzsv = undefined
+          this.resetPosition(this.flrLab)
+          this.resetPosition(this.ceilLab)
+          this.resetPosition(this.cmbLab)
+          this.resetPosition(this.minLab)
+          this.resetPosition(this.maxLab)
         },
 
         /**
@@ -935,8 +961,11 @@
           )
             this.minH.attr('tabindex', '0')
           else this.minH.attr('tabindex', '')
-          if (this.options.vertical)
+          if (this.options.vertical) {
             this.minH.attr('aria-orientation', 'vertical')
+          } else {
+            this.minH.attr('aria-orientation', 'horizontal')
+          }
           if (this.options.ariaLabel)
             this.minH.attr('aria-label', this.options.ariaLabel)
           else if (this.options.ariaLabelledBy)
@@ -952,6 +981,7 @@
             else this.maxH.attr('tabindex', '')
             if (this.options.vertical)
               this.maxH.attr('aria-orientation', 'vertical')
+            else this.maxH.attr('aria-orientation', 'horizontal')
             if (this.options.ariaLabelHigh)
               this.maxH.attr('aria-label', this.options.ariaLabelHigh)
             else if (this.options.ariaLabelledByHigh)
@@ -1033,9 +1063,9 @@
           if (this.options.rightToLeft) ticksArray.reverse()
 
           this.scope.ticks = ticksArray.map(function(value) {
-            var legend = null;
+            var legend = null
             if (angular.isObject(value)) {
-              legend = value.legend;
+              legend = value.legend
               value = value.value
             }
 
@@ -1622,6 +1652,13 @@
           return pos
         },
 
+        resetPosition: function(elem) {
+          elem.css({
+            left: null,
+            bottom: null,
+          })
+        },
+
         /**
          * Get element width/height depending on whether slider is horizontal or vertical
          *
@@ -1982,11 +2019,12 @@
          * @returns {undefined}
          */
         onStart: function(pointer, ref, event) {
+          console.log('onStart');
           var ehMove,
             ehEnd,
             eventNames = this.getEventNames(event)
 
-          event.stopPropagation()
+          // event.stopPropagation()
           event.preventDefault()
 
           // We have to do this in case the HTML where the sliders are on
@@ -2000,7 +2038,7 @@
             this.tracking = pointer === this.minH ? 'lowValue' : 'highValue'
           }
 
-          pointer.addClass('rz-active')
+          pointer.addClass('rz-active123123123')
 
           if (this.options.keyboardSupport) this.focusElement(pointer)
 
@@ -2036,6 +2074,12 @@
          * @returns {undefined}
          */
         onMove: function(pointer, event, fromTick) {
+          if (!this.options.disableAnimation) {
+            if (this.moving) {
+              this.sliderElem.addClass('noanimate')
+            }
+          }
+          this.moving = true
           var changedTouches = this.getEventAttr(event, 'changedTouches')
           var touchForThisSlider
           if (changedTouches) {
@@ -2082,6 +2126,10 @@
          * @returns {undefined}
          */
         onEnd: function(ehMove, event) {
+          this.moving = false
+          if (!this.options.disableAnimation) {
+            this.sliderElem.removeClass('noanimate')
+          }
           var changedTouches = this.getEventAttr(event, 'changedTouches')
           if (changedTouches && changedTouches[0].identifier !== this.touchId) {
             return
@@ -2090,8 +2138,8 @@
           this.touchId = null
 
           if (!this.options.keyboardSupport) {
-            this.minH.removeClass('rz-active')
-            this.maxH.removeClass('rz-active')
+            this.minH.removeClass('rz-active123123123')
+            this.maxH.removeClass('rz-active123123123')
             this.tracking = ''
           }
           this.dragging.active = false
@@ -2113,7 +2161,7 @@
           pointer.on('keydown', angular.bind(this, this.onKeyboardEvent))
           pointer.on('keyup', angular.bind(this, this.onKeyUp))
           this.firstKeyDown = true
-          pointer.addClass('rz-active')
+          pointer.addClass('rz-active123123123')
 
           this.currentFocusElement = {
             pointer: pointer,
@@ -2129,7 +2177,7 @@
         onPointerBlur: function(pointer) {
           pointer.off('keydown')
           pointer.off('keyup')
-          pointer.removeClass('rz-active')
+          pointer.removeClass('rz-active123123123')
           if (!this.isDragging) {
             this.tracking = ''
             this.currentFocusElement = null
@@ -2328,6 +2376,12 @@
          * @returns {undefined}
          */
         onDragMove: function(pointer, event) {
+          if (!this.options.disableAnimation) {
+            if (this.moving) {
+              this.sliderElem.addClass('noanimate')
+            }
+          }
+          this.moving = true
           var newPos = this.getEventPosition(event),
             newMinValue,
             newMaxValue,
@@ -2430,8 +2484,8 @@
                 this.updateHandles(this.tracking, this.maxH.rzsp)
                 this.updateAriaAttributes()
                 this.tracking = 'highValue'
-                this.minH.removeClass('rz-active')
-                this.maxH.addClass('rz-active')
+                this.minH.removeClass('rz-active123123123')
+                this.maxH.addClass('rz-active123123123')
                 if (this.options.keyboardSupport) this.focusElement(this.maxH)
                 valueChanged = true
               } else if (
@@ -2444,8 +2498,8 @@
                 this.updateHandles(this.tracking, this.minH.rzsp)
                 this.updateAriaAttributes()
                 this.tracking = 'lowValue'
-                this.maxH.removeClass('rz-active')
-                this.minH.addClass('rz-active')
+                this.maxH.removeClass('rz-active123123123')
+                this.minH.addClass('rz-active123123123')
                 if (this.options.keyboardSupport) this.focusElement(this.minH)
                 valueChanged = true
               }
